@@ -249,24 +249,33 @@ tcc-api-oximetro/
 ### Autenticação e saúde
 
 * POST /login
-* GET /health
-* GET /security-info
-* GET /mtls-info
-* GET /compliance/policy
+* GET /health - Status do serviço
+* GET /security-info - Informações de segurança
+* GET /mtls-info - Informações do mtls
+* GET /compliance/policy - Políticas de conformidade
 
 ### Leituras e pacientes
 
-* POST /readings
-* GET /patients
-* GET /readings/{patient_code}
+* POST /readings - Envia leitura (HTTP ou mTLS)
+* GET /patients - Lista pacientes (autenticado)
+* GET /readings/{patient_code} - Leitura do paciente
 
 ### Auditoria
 
-* GET /logs
-* GET /audit/verify/{log_id}
-* GET /audit/verify-all
+* GET /logs - Logs de auditoria(admin)
+* GET /audit/verify/{log_id} - Verifica integridade do log
+* GET /audit/verify-all - Auditoria geral
 
 ---
+
+### Usuários de teste
+| Usuário  | Senha       | Papel  | Especialidade     |
+|----------|-------------|--------|-------------------|
+| dr.jose  | secret1234  | doctor | Clínico Geral     |
+| dr.ana   | secret1234  | doctor | Cardiologia       |
+| igor     | secret1234  | doctor | Clínico Geral     |
+| admin    | secret1234  | admin  | Administração     |
+
 
 ## Configuração de segurança
 
