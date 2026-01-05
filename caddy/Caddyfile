@@ -1,0 +1,44 @@
+{
+    debug
+    auto_https off
+}
+:8000 {
+    reverse_proxy api:8000
+
+    log {
+        output stdout
+        format console
+    }
+}
+
+:9443 {
+    tls /certs/server.crt /certs/server.key {
+        client_auth {
+            mode require_and_verify
+            trusted_ca_cert_file /certs/ca.crt
+        }
+    }
+
+    reverse_proxy api:8000 {
+        header_up X-mTLS-Authenticated "true"
+        header_up X-Device-Certificate {http.request.tls.client.subject}
+        header_up X-SSL-Client-CN {http.request.tls.client.subject.common_name}
+        header_up X-SSL-Client-Verify "SUCCESS"
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}
+
+:9444 {
+    tls /certs/server.crt /certs/server.key
+
+    reverse_proxy api:8000
+
+    log {
+        output stdout
+        format console
+    }
+}

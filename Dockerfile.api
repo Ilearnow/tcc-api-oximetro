@@ -1,0 +1,66 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    curl \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY app/ /app/app/
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN mkdir -p /app/certs
+
+RUN cat > /app/gen-certs.sh << 'EOF'
+#!/bin/bash
+echo "gerando certificados"
+mkdir -p /app/certs
+cd /app/certs
+
+if [ -f server.crt ]; then
+    echo "Certificados já existem"
+    exit 0
+fi
+
+openssl req -x509 -newkey rsa:2048 \
+  -keyout ca.key -out ca.crt -days 365 -nodes \
+  -subj "/C=BR/CN=Root CA"
+
+openssl req -newkey rsa:2048 \
+  -keyout server.key -out server.csr -nodes \
+  -subj "/C=BR/CN=localhost"
+
+openssl x509 -req -in server.csr \
+  -CA ca.crt -CAkey ca.key -CAcreateserial \
+  -out server.crt -days 365
+
+openssl req -newkey rsa:2048 \
+  -keyout client.key -out client.csr -nodes \
+  -subj "/C=BR/CN=client"
+
+openssl x509 -req -in client.csr \
+  -CA ca.crt -CAkey ca.key \
+  -out client.crt -days 365
+
+cat client.crt client.key > client.pem
+
+chmod 644 *.crt
+chmod 600 *.key
+
+EOF
+
+RUN chmod +x /app/gen-certs.sh
+
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+ENV PYTHONPATH=/app:$PYTHONPATH
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8000
+
+CMD ["sh", "-c", "/app/gen-certs.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

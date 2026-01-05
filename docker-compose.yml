@@ -1,0 +1,75 @@
+services:
+  caddy:
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
+    container_name: tcc_caddy
+    ports:
+      - "8000:8000"
+      - "9443:9443"
+      - "9444:9444"
+    volumes:
+      - ./certs:/certs:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - tcc-network
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: tcc_api
+    expose:
+      - "8000"
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app:/app/app
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/app:ro
+    networks:
+      - tcc-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    container_name: tcc_postgres
+    environment:
+      POSTGRES_USER: tcc_user
+      POSTGRES_PASSWORD: tcc_password_secure
+      POSTGRES_DB: tcc_health_db
+    volumes:
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tcc_user -d tcc_health_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tcc-network
+    restart: unless-stopped
+
+networks:
+  tcc-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
