@@ -116,6 +116,7 @@ Este projeto implementa uma API REST segura para coleta, processamento e consult
 * Mutual TLS (mTLS)
 * Docker e Docker Compose
 * Criptografia AES-256
+* OpenSSL
 
 ### Testes e qualidade
 
@@ -137,7 +138,7 @@ Este projeto implementa uma API REST segura para coleta, processamento e consult
 ### Instalação rápida com Docker
 
 ```bash
-git clone https://github.com/seu-usuario/tcc-api-oximetro.git
+git clone https://github.com/Ilearnow/tcc-api-oximetro.git
 cd tcc-api-oximetro
 
 cp .env.example .env
@@ -225,6 +226,22 @@ docker-compose up --build -d
 
 ---
 
+### Geração e verificação dos certificados
+```
+# Gerar certificados
+python scripts/gerar_certificados.py
+
+# Verificar certificado do servidor
+openssl x509 -in certs/server.crt -text -noout
+
+# Testar mTLS
+curl -k --cert certs/client.pem https://localhost:9443/mtls-info
+
+# Verificar se certificados estão no container
+docker-compose exec caddy ls -la /certs/
+
+```
+
 ## Estrutura do projeto
 
 ```
@@ -241,6 +258,25 @@ tcc-api-oximetro/
 ├── init.sql
 └── README.md
 ```
+---
+
+## Estrutura dos certificados
+
+```
+certs/
+├── ca.crt                    
+├── ca.key                    
+├── server.crt               
+├── server.key                
+├── server.pem                
+├── client.crt                
+├── client.key                
+├── client.pem                
+└── server.ext                
+```
+
+# Execute uma vez para gerar todos os certificados
+python scripts/gerar_certificados.py
 
 ---
 
