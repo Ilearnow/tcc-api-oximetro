@@ -335,4 +335,4 @@ O sistema mitiga as principais ameaças do OWASP API Security Top 10 (2023), al�
 
 Este projeto é desenvolvido para fins acadêmicos como trabalho de conclusão de curso.
 
-Desenvolvido para o TCC em segurança da informação.
+Desenvolvido para o TCC em ciência da computação.
