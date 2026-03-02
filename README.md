@@ -333,6 +333,6 @@ O sistema mitiga as principais ameaças do OWASP API Security Top 10 (2023), al�
 
 ## Licença
 
-Este projeto é desenvolvido para fins acadêmicos como trabalho de conclusão de curso.
+Este projeto foi desenvolvido para fins acadêmicos como trabalho de conclusão de curso.
 
 Desenvolvido para o TCC em ciência da computação.
